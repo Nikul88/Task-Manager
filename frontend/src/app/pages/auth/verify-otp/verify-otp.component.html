@@ -1,0 +1,41 @@
+<!-- src/app/pages/auth/verify-otp/verify-otp.component.html -->
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">🚀</div>
+      <div class="logo-text">TaskFlow</div>
+    </div>
+
+    <h1 class="auth-title">Verify your email</h1>
+    <p class="auth-subtitle">We sent a 6-digit code to <strong style="color:var(--accent-light)">{{ email }}</strong></p>
+
+    <div *ngIf="error" class="alert alert-error">⚠️ {{ error }}</div>
+    <div *ngIf="success" class="alert alert-success">✅ {{ success }}</div>
+
+    <div class="otp-inputs">
+      <input *ngFor="let i of [0,1,2,3,4,5]"
+             class="otp-input"
+             type="text" maxlength="1"
+             [id]="'otp-' + i"
+             [value]="otpDigits[i]"
+             (input)="onDigitInput($event, i)"
+             (keydown)="onKeyDown($event, i)"
+             (paste)="onPaste($event)" />
+    </div>
+
+    <button class="btn btn-primary btn-full" (click)="onVerify()" [disabled]="loading || otpCode.length < 6">
+      <span *ngIf="loading" class="spinner"></span>
+      {{ loading ? 'Verifying…' : 'Verify & Sign In' }}
+    </button>
+
+    <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:20px">
+      Didn't receive the code?
+      <span class="text-accent" style="cursor:pointer;font-weight:600" (click)="onResend()">
+        {{ resendCooldown > 0 ? 'Resend in ' + resendCooldown + 's' : 'Resend OTP' }}
+      </span>
+    </p>
+    <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:8px">
+      <a routerLink="/signup">← Back to signup</a>
+    </p>
+  </div>
+</div>

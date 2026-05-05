@@ -1,0 +1,93 @@
+<!-- src/app/pages/tasks/task-form/task-form.component.html -->
+<div class="page-layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="main-content">
+    <a [routerLink]="projectId ? ['/projects', projectId] : '/projects'" class="btn btn-ghost btn-sm" style="margin-bottom:20px;display:inline-flex">
+      ← Back
+    </a>
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ isEdit ? '✏️ Edit Task' : '➕ Create Task' }}</h1>
+        <p class="page-subtitle">{{ isEdit ? 'Update task details' : 'Add a new task to a project' }}</p>
+      </div>
+    </div>
+
+    <div *ngIf="loading" style="text-align:center;padding:60px">
+      <div class="spinner" style="width:36px;height:36px;border-width:3px;margin:auto"></div>
+    </div>
+
+    <div class="card" style="max-width:700px" *ngIf="!loading">
+      <div *ngIf="error" class="alert alert-error">⚠️ {{ error }}</div>
+      <div *ngIf="success" class="alert alert-success">✅ {{ success }}</div>
+
+      <form (ngSubmit)="onSubmit()" #form="ngForm">
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label">Task Title *</label>
+          <input class="form-input" type="text" placeholder="e.g. Design login page"
+                 [(ngModel)]="title" name="title" required />
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" placeholder="Describe the task in detail…"
+                    [(ngModel)]="description" name="description"></textarea>
+        </div>
+
+        <!-- Project + Assignee row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label class="form-label">Project *</label>
+            <select class="form-select" [(ngModel)]="selectedProjectId" name="project_id"
+                    required (change)="onProjectChange()" [disabled]="isEdit">
+              <option value="">Select project…</option>
+              <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assignee</label>
+            <select class="form-select" [(ngModel)]="assigneeId" name="assignee_id">
+              <option [ngValue]="null">Unassigned</option>
+              <option *ngFor="let m of members" [value]="m.user_id">{{ m.user_name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Status + Priority + Due Date row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" [(ngModel)]="status" name="status">
+              <option value="todo">To Do</option>
+              <option value="in_progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <select class="form-select" [(ngModel)]="priority" name="priority">
+              <option value="low">🟦 Low</option>
+              <option value="medium">🟨 Medium</option>
+              <option value="high">🟥 High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input class="form-input" type="datetime-local" [(ngModel)]="dueDate" name="due_date" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
+          <a [routerLink]="projectId ? ['/projects', projectId] : '/projects'" class="btn btn-secondary">Cancel</a>
+          <button class="btn btn-primary" type="submit" [disabled]="saving || !title.trim() || !selectedProjectId">
+            <span *ngIf="saving" class="spinner"></span>
+            {{ saving ? (isEdit ? 'Saving…' : 'Creating…') : (isEdit ? 'Save Changes' : 'Create Task') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

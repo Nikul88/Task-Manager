@@ -1,0 +1,45 @@
+<!-- src/app/pages/auth/login/login.component.html -->
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">🚀</div>
+      <div class="logo-text">TaskFlow</div>
+    </div>
+
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-subtitle">Sign in to continue to your workspace</p>
+
+    <div *ngIf="error" class="alert alert-error">⚠️ {{ error }}</div>
+
+    <form (ngSubmit)="onLogin()" #form="ngForm">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" placeholder="john@example.com"
+               [(ngModel)]="email" name="email" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" [type]="showPwd ? 'text' : 'password'"
+               placeholder="Your password"
+               [(ngModel)]="password" name="password" required />
+        <div class="mt-8" style="text-align:right">
+          <span class="text-muted" style="font-size:12px;cursor:pointer"
+                (click)="showPwd = !showPwd">{{ showPwd ? 'Hide' : 'Show' }} password</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" type="submit" [disabled]="loading || !form.valid">
+        <span *ngIf="loading" class="spinner"></span>
+        {{ loading ? 'Signing in…' : 'Sign In' }}
+      </button>
+    </form>
+
+    <div class="text-divider mt-24">or</div>
+    <p style="text-align:center;font-size:14px;color:var(--text-secondary)">
+      Don't have an account? <a routerLink="/signup">Sign up</a>
+    </p>
+    <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:8px">
+      Need to verify email? <a routerLink="/verify-otp">Enter OTP</a>
+    </p>
+  </div>
+</div>

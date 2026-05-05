@@ -1,0 +1,48 @@
+<!-- src/app/pages/auth/signup/signup.component.html -->
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon">🚀</div>
+      <div class="logo-text">TaskFlow</div>
+    </div>
+
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-subtitle">Join your team and start managing tasks</p>
+
+    <div *ngIf="error" class="alert alert-error">⚠️ {{ error }}</div>
+    <div *ngIf="success" class="alert alert-success">✅ {{ success }}</div>
+
+    <form (ngSubmit)="onSubmit()" #form="ngForm">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" type="text" placeholder="John Doe"
+               [(ngModel)]="name" name="name" required minlength="2" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" placeholder="john@example.com"
+               [(ngModel)]="email" name="email" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" [type]="showPwd ? 'text' : 'password'"
+               placeholder="Min. 6 characters"
+               [(ngModel)]="password" name="password" required minlength="6" />
+        <div class="mt-8" style="text-align:right">
+          <span class="text-muted" style="font-size:12px;cursor:pointer"
+                (click)="showPwd = !showPwd">{{ showPwd ? 'Hide' : 'Show' }} password</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" type="submit" [disabled]="loading || !form.valid">
+        <span *ngIf="loading" class="spinner"></span>
+        {{ loading ? 'Creating account…' : 'Create Account' }}
+      </button>
+    </form>
+
+    <div class="text-divider mt-24">or</div>
+    <p style="text-align:center;font-size:14px;color:var(--text-secondary)">
+      Already have an account? <a routerLink="/login">Sign in</a>
+    </p>
+  </div>
+</div>

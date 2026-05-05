@@ -1,0 +1,99 @@
+<!-- src/app/pages/projects/projects-list/projects-list.component.html -->
+<div class="page-layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Projects</h1>
+        <p class="page-subtitle">Manage your team projects</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateModal()" *ngIf="user()?.role === 'admin'">
+        ➕ New Project
+      </button>
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">⚠️ {{ error }}</div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" style="text-align:center;padding:60px">
+      <div class="spinner" style="width:36px;height:36px;border-width:3px;margin:auto"></div>
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="!loading && projects.length === 0" class="empty-state">
+      <div class="empty-icon">📁</div>
+      <h3>No projects yet</h3>
+      <p>Create your first project to get started</p>
+      <button class="btn btn-primary mt-16" (click)="openCreateModal()" *ngIf="user()?.role === 'admin'">Create Project</button>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid-3" *ngIf="!loading && projects.length > 0">
+      <div class="card card-hover" *ngFor="let p of projects" style="cursor:pointer" (click)="goToProject(p.id)">
+        <div class="flex-between mb-16">
+          <div style="width:44px;height:44px;background:linear-gradient(135deg,var(--accent),#8b5cf6);
+                      border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px">
+            📁
+          </div>
+          <button class="btn btn-ghost btn-icon" (click)="openDeleteModal(p, $event)" title="Delete" *ngIf="user()?.role === 'admin'">🗑️</button>
+        </div>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">{{ p.name }}</h3>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;min-height:36px">
+          {{ p.description || 'No description' }}
+        </p>
+        <div class="flex" style="gap:16px;font-size:12px;color:var(--text-muted)">
+          <span>👥 {{ p.member_count }} members</span>
+          <span>📋 {{ p.task_count }} tasks</span>
+        </div>
+        <div class="divider" style="margin:12px 0 8px"></div>
+        <div style="font-size:12px;color:var(--text-muted)">
+          Owner: <span style="color:var(--text-secondary)">{{ p.owner_name }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Project Modal -->
+<div class="modal-backdrop" *ngIf="showCreateModal" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2 class="modal-title">✨ Create New Project</h2>
+    <div *ngIf="modalError" class="alert alert-error">⚠️ {{ modalError }}</div>
+    <div class="form-group">
+      <label class="form-label">Project Name *</label>
+      <input class="form-input" type="text" placeholder="e.g. Website Redesign"
+             [(ngModel)]="newName" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" placeholder="What is this project about?"
+                [(ngModel)]="newDesc"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+      <button class="btn btn-primary" (click)="createProject()" [disabled]="saving || !newName.trim()">
+        <span *ngIf="saving" class="spinner"></span>
+        {{ saving ? 'Creating…' : 'Create Project' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2 class="modal-title">🗑️ Delete Project</h2>
+    <p style="color:var(--text-secondary);margin-bottom:8px">
+      Are you sure you want to delete <strong style="color:var(--text-primary)">{{ deleteTarget?.name }}</strong>?
+    </p>
+    <div class="alert alert-error">⚠️ All tasks in this project will be permanently deleted.</div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+      <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="saving">
+        <span *ngIf="saving" class="spinner"></span>
+        {{ saving ? 'Deleting…' : 'Delete' }}
+      </button>
+    </div>
+  </div>
+</div>

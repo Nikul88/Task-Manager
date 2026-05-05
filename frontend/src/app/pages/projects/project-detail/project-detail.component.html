@@ -1,0 +1,168 @@
+<!-- src/app/pages/projects/project-detail/project-detail.component.html -->
+<div class="page-layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="main-content">
+    <!-- Back -->
+    <a routerLink="/projects" class="btn btn-ghost btn-sm" style="margin-bottom:20px;display:inline-flex">
+      ← Back to Projects
+    </a>
+
+    <div *ngIf="loading" style="text-align:center;padding:60px">
+      <div class="spinner" style="width:36px;height:36px;border-width:3px;margin:auto"></div>
+    </div>
+
+    <ng-container *ngIf="!loading && project">
+      <!-- Header -->
+      <div class="card mb-24">
+        <div class="flex-between">
+          <div>
+            <h1 class="page-title">📁 {{ project.name }}</h1>
+            <p class="page-subtitle">{{ project.description || 'No description' }}</p>
+          </div>
+          <div class="flex" style="gap:10px" *ngIf="user()?.role === 'admin'">
+            <button class="btn btn-secondary btn-sm" (click)="openAddMemberModal()">👥 Add Member</button>
+            <a [routerLink]="['/tasks/new']" [queryParams]="{project_id: project.id}" class="btn btn-primary btn-sm">
+              ➕ Add Task
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-column layout -->
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start">
+
+        <!-- Tasks -->
+        <div>
+          <div class="flex-between mb-16">
+            <h2 style="font-size:18px;font-weight:700">Tasks ({{ tasks.length }})</h2>
+            <div class="flex" style="gap:8px">
+              <select class="form-select" style="width:140px;padding:8px 32px 8px 12px" [(ngModel)]="statusFilter" (change)="filterTasks()">
+                <option value="">All Status</option>
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+          </div>
+
+          <div *ngIf="filteredTasks.length === 0" class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No tasks yet</h3>
+            <p>Add the first task to this project</p>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="card" *ngFor="let task of filteredTasks"
+                 style="border-left:3px solid" [style.border-left-color]="getPriorityColor(task.priority)">
+              <div class="flex-between">
+                <div style="flex:1">
+                  <div class="flex-center" style="gap:10px;margin-bottom:6px">
+                    <span class="fw-600" style="font-size:15px">{{ task.title }}</span>
+                    <span [class]="getStatusClass(task.status)">{{ getStatusLabel(task.status) }}</span>
+                    <span [class]="getPriorityClass(task.priority)">{{ task.priority }}</span>
+                    <span class="badge badge-overdue" *ngIf="task.is_overdue">🔥 Overdue</span>
+                  </div>
+                  <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px" *ngIf="task.description">
+                    {{ task.description }}
+                  </p>
+                  <div class="flex" style="gap:16px;font-size:12px;color:var(--text-muted)">
+                    <span *ngIf="task.assignee_name">👤 {{ task.assignee_name }}</span>
+                    <span *ngIf="task.due_date">📅 {{ task.due_date | date:'MMM d, y' }}</span>
+                    <span>Created by {{ task.creator_name }}</span>
+                  </div>
+                </div>
+                <div class="flex" style="gap:6px;margin-left:16px">
+                  <select class="form-select" style="width:130px;padding:6px 28px 6px 10px;font-size:12px"
+                          [value]="task.status" (change)="updateStatus(task, $event)">
+                    <option value="todo">To Do</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="done">Done</option>
+                  </select>
+                  <a [routerLink]="['/tasks', task.id, 'edit']" class="btn btn-ghost btn-icon" title="Edit" *ngIf="user()?.role === 'admin'">✏️</a>
+                  <button class="btn btn-ghost btn-icon" (click)="openDeleteTaskModal(task)" title="Delete" *ngIf="user()?.role === 'admin'">🗑️</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Members Panel -->
+        <div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:16px">Members ({{ project.members.length }})</h2>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="card" *ngFor="let m of project.members" style="padding:16px">
+              <div class="flex-between">
+                <div class="flex-center" style="gap:10px">
+                  <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#8b5cf6);
+                              border-radius:50%;display:flex;align-items:center;justify-content:center;
+                              font-size:14px;font-weight:700;color:#fff;flex-shrink:0">
+                    {{ m.user_name[0].toUpperCase() }}
+                  </div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600">{{ m.user_name }}</div>
+                    <div style="font-size:11px;color:var(--text-muted)">{{ m.user_email }}</div>
+                  </div>
+                </div>
+                <div class="flex-center" style="gap:6px">
+                  <span [class]="m.role === 'admin' ? 'badge badge-admin' : 'badge badge-member'">{{ m.role }}</span>
+                  <button *ngIf="user()?.role === 'admin' && m.user_id !== project.owner_id"
+                          class="btn btn-ghost btn-icon" style="font-size:14px"
+                          (click)="removeMember(m)" title="Remove">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="!loading && !project" class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>Project not found</h3>
+      <a routerLink="/projects" class="btn btn-primary mt-16">Go to Projects</a>
+    </div>
+  </div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal-backdrop" *ngIf="showAddMemberModal" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2 class="modal-title">👥 Add Team Member</h2>
+    <div *ngIf="modalError" class="alert alert-error">⚠️ {{ modalError }}</div>
+    <div *ngIf="modalSuccess" class="alert alert-success">✅ {{ modalSuccess }}</div>
+    <div class="form-group">
+      <label class="form-label">Member Email *</label>
+      <input class="form-input" type="email" placeholder="team@example.com" [(ngModel)]="memberEmail" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <select class="form-select" [(ngModel)]="memberRole">
+        <option value="member">Member</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+      <button class="btn btn-primary" (click)="addMember()" [disabled]="saving || !memberEmail.trim()">
+        <span *ngIf="saving" class="spinner"></span>
+        {{ saving ? 'Adding…' : 'Add Member' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Task Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteTaskModal" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h2 class="modal-title">🗑️ Delete Task</h2>
+    <p style="color:var(--text-secondary)">Delete <strong style="color:var(--text-primary)">{{ deleteTaskTarget?.title }}</strong>? This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+      <button class="btn btn-danger" (click)="confirmDeleteTask()" [disabled]="saving">
+        <span *ngIf="saving" class="spinner"></span>
+        Delete
+      </button>
+    </div>
+  </div>
+</div>

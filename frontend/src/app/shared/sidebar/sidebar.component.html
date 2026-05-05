@@ -1,0 +1,31 @@
+<!-- src/app/shared/sidebar/sidebar.component.html -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🚀</div>
+    <div class="logo-text">TaskFlow</div>
+  </div>
+
+  <div class="nav-section-label">Main</div>
+  <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
+    <span class="nav-icon">📊</span> Dashboard
+  </a>
+  <a class="nav-item" routerLink="/projects" routerLinkActive="active">
+    <span class="nav-icon">📁</span> Projects
+  </a>
+  <a class="nav-item" routerLink="/tasks/new" routerLinkActive="active" *ngIf="user()?.role === 'admin'">
+    <span class="nav-icon">➕</span> New Task
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="nav-item" style="margin-bottom:8px;cursor:default;pointer-events:none">
+      <span class="nav-icon">👤</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary)">{{ user()?.name }}</div>
+        <div style="font-size:11px;color:var(--text-muted)">{{ user()?.role | titlecase }}</div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-full" (click)="logout()" style="justify-content:flex-start;gap:10px">
+      <span>🚪</span> Sign Out
+    </button>
+  </div>
+</nav>
