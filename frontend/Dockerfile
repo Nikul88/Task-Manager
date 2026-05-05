@@ -7,12 +7,12 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:1.27-alpine
+FROM node:20-alpine
 
-RUN apk add --no-cache gettext
+WORKDIR /app
+RUN npm install -g serve && apk add --no-cache gettext
 
-COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
-COPY env.js.template /usr/share/nginx/html/env.js.template
+COPY --from=build /app/dist/frontend/browser ./public
+COPY env.js.template ./public/env.js.template
 
-CMD ["sh", "-c", "export PORT=${PORT:-8080}; export API_URL=${API_URL:-http://localhost:8000/api}; envsubst '${PORT} ${API_URL}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && envsubst '${API_URL}' < /usr/share/nginx/html/env.js.template > /usr/share/nginx/html/env.js && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "export PORT=${PORT:-8080}; export API_URL=${API_URL:-http://localhost:8000/api}; envsubst '${API_URL}' < ./public/env.js.template > ./public/env.js && serve -s ./public -l ${PORT}"]
